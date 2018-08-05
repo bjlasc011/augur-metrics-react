@@ -4,7 +4,7 @@ import './App.css';
 
 const Augur = require('augur.js');
 const augur = new Augur();
-const BigNumber = require('bignumber.js');
+// const BigNumber = require('bignumber.js');
 
 class AugurMetrics extends React.Component {
   constructor(props) {
