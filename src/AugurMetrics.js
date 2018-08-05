@@ -21,11 +21,13 @@ class AugurMetrics extends React.Component {
     }
   }
   componentDidMount() {
-    this.connectNode();
+    this.connectNode.then(() => {
+      this.getMarketCats()
+    })
     console.log("mounted");
   }
 
-  connectNode = async () => {
+  connectNode = new Promise((resolve, reject) => {
     var augurNode = //"wss://augur.gethstar.com";
       "ws://127.0.0.1:9001";
     var ethereumNode = {
@@ -37,15 +39,18 @@ class AugurMetrics extends React.Component {
         "wss://megageth.com/ws"
       ]
     };
-    await augur.connect({ ethereumNode, augurNode }, (err, connectionInfo) => {
+    augur.connect({ ethereumNode, augurNode }, (err, connectionInfo) => {
       console.log(connectionInfo);
       this.setState({
         connectedAugurNode: connectionInfo.augurNode,
         universe: connectionInfo.ethereumNode.contracts.Universe
       });
-      return connectionInfo;
+      if (connectionInfo) {
+        resolve(this.state.universe);
+      }
+      else reject(err);
     })
-  }
+  })
 
   getSyncInfo = async () => {
     await augur.augurNode.getSyncData(
@@ -57,11 +62,11 @@ class AugurMetrics extends React.Component {
   }
 
   getMarketCats = async () => {
-    console.log("fetching categories...");
+    console.log(`fetching categories...${this.state.universe}`);
     this.setState({
       categories: []
     })
-    await augur.markets.getCategories({
+    augur.markets.getCategories({
       universe: this.state.universe
     },
       (error, cats) => {
@@ -141,40 +146,14 @@ class AugurMetrics extends React.Component {
     }
   }
 
-  getAllStakes = async () => {
-    console.log(this.state.allStakes)
-    // for (let i = 0; this.state.priceHistory[i] !== undefined; ++i) {
-    //   for (let j = 0; this.state.priceHistory[i][j] !== undefined; ++j) {
-    //     // if (this.state.priceHistory[i][j] !== undefined) {
-    //     this.setState({
-    //       allStakes: this.state.allStakes + (this.state.priceHistory[i][j].price * this.state.priceHistory[i][j].amount)
-    //     })
-    //     console.log(this.state.allStakes);
-    //     // }
-    //   }
-    // }
-  }
-  getTotalStakes = async () => {
-
-  }
-
-  // for(let i = 0; i < marketIds.length; ++i){
-  //   augur.markets.getMarketPriceHistory({
-  //     marketIds: this.state.marketIds[i]
-  //   })
-  // }
-
   render() {
     return (
       <div>
         <h1>AugurMetrics</h1>
-        <button onClick={this.getMarketCats}>Get Markets Categories</button>
-        <br />
         <button onClick={this.getAllMarkets}>Get All Markets</button>
         <br />
-        <button onClick={this.getMarketsInfo}>Get Market Info</button>
+        <button onClick={this.getMarketsInfo}>Get Shares Outstanding</button>
         <br />
-        <button onClick={this.getAllStakes}>Get Stakes</button>
 
         <Info
           marketsIdsByCategories={this.state.marketsIdsByCategories}
