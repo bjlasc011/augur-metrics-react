@@ -1,12 +1,13 @@
 import React from 'react';
 import Info from "./info";
 import Chart from './chart';
-// import { getData } from "./utils"
-// import { TypeChooser } from "react-stockcharts/lib/helper";
+import { getData } from "./utils"
+import { TypeChooser } from "react-stockcharts/lib/helper";
 import './App.css';
 
 const Augur = require('augur.js');
 const augur = new Augur();
+const http = require('request-promise');
 
 class AugurMetrics extends React.Component {
   constructor(props) {
@@ -22,34 +23,43 @@ class AugurMetrics extends React.Component {
       marketIds: [],
       priceHistory: [],
       allSharesOutstanding: undefined,
-      chartData: undefined
+      data: undefined
     }
     console.log("Constructor()")
   }
+
+  componentWillMount() {
+    getData().then((d) => {
+      console.log(d);
+      this.setState({ data: d })
+    })
+  }
+
   componentDidMount() {
-    // http.get('https://api.coinmarketcap.com/v2/listings/', (err, res, body) => {
-    //   let bodyId = body;
-    //   console.log(bodyId);
-    //   console.log(bodyId[0].data);
-      // http(`https://api.coinmarketcap.com/v2/ticker/${this.state.ethId}/`, (err, response, body) => {
+    http.get('https://api.coinmarketcap.com/v2/listings/', (err, res, body) => {
+      this.setState({
+        ethId: body
+      })
+      console.log(body);
+      console.log(body[0].data);
+      // http.get(`https://api.coinmarketcap.com/v2/ticker/${this.state.ethId}/`, (err, response, body) => {
       //   console.log(response);
       //   console.log(body);
-      //   // this.setState({
-      //   //   ethUsd: body.data[1].quotes.USD.price
-      //   // })
-      //   // console.log(err);
+      // this.setState({
+      //   ethUsd: body.data[1].quotes.USD.price
       // })
-      // if(err){
-      //   console.log(err);
-      // }).then(()=>{
-      //   console.log("then")
+      // console.log(err);
       // })
+
+    })
+      .then(() => { console.log("then") })
+      .catch((err) => { console.log(err) })
     this.connectNode.then(() => {
-      // getData().then((data) => {
+      getData().then((data) => {
         this.setState({
-          chartData: 0
+          chartData: data
         })
-      // })
+      })
     })
     console.log("mounted");
   }
@@ -200,6 +210,7 @@ class AugurMetrics extends React.Component {
     return (
       <div>
         <h1>AugurMetrics</h1>
+        <div id="buffer"></div>
         {this.state.connectedAugurNode === undefined && <p> Loading... </p>}
         <Info
           marketsIdsByCategories={this.state.marketsIdsByCategories}
@@ -209,7 +220,9 @@ class AugurMetrics extends React.Component {
           markets={this.state.markets}
           allSharesOutstanding={this.state.allSharesOutstanding}
         />
-        {/* <Chart /> */}
+        {this.state.data && <Chart
+          data={this.state.data}
+        />}
       </div>
     );
   }

@@ -1,5 +1,14 @@
 body {
   margin: 0;
-  padding: 0;
+  padding: 10px;
   font-family: sans-serif;
+  background: rgb(31, 31, 31);
+  color: #decaff;
+  font-size: 1.2rem;
+}
+h1 {
+  text-align: center;
+}
+#buffer{
+  height: 15px;
 }
